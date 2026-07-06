@@ -11,7 +11,7 @@ from .report import render_scan_findings, render_probe_results, write_json_repor
 
 
 @click.group()
-@click.version_option(package_name="mcp-rc-audit")
+@click.version_option(version="0.1.0", prog_name="mcp-rc-audit")
 def main():
     """
     mcp-rc-audit: static scanner + live conformance probe for the
