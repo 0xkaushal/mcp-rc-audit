@@ -38,6 +38,25 @@ curl -LsSf https://raw.githubusercontent.com/0xkaushal/mcp-rc-audit/main/install
 
 This auto-detects `uv`, `pipx`, or `pip` and installs from GitHub.
 
+### Standalone binary (no Python/pip/PyPI needed)
+
+If PyPI is blocked for some reason or you don't want to install Python dependencies:
+
+```bash
+# macOS (Apple Silicon)
+curl -LsSf https://github.com/0xkaushal/mcp-rc-audit/releases/latest/download/mcp-rc-audit-macos-arm64 -o mcp-rc-audit
+chmod +x mcp-rc-audit
+./mcp-rc-audit scan ./my-server/
+
+# macOS (Intel)
+curl -LsSf https://github.com/0xkaushal/mcp-rc-audit/releases/latest/download/mcp-rc-audit-macos-x64 -o mcp-rc-audit
+chmod +x mcp-rc-audit
+
+# Linux
+curl -LsSf https://github.com/0xkaushal/mcp-rc-audit/releases/latest/download/mcp-rc-audit-linux -o mcp-rc-audit
+chmod +x mcp-rc-audit
+```
+
 ### Alternative install methods
 
 ```bash
