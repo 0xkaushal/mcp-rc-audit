@@ -9,7 +9,7 @@ description = "Static scanner + live conformance probe for the MCP 2026-07-28 st
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
-authors = [{ name = "Satvik" }]
+authors = [{ name = "0xkaushal" }]
 keywords = ["mcp", "audit", "migration", "model-context-protocol", "stateless", "scanner"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -32,8 +32,8 @@ dependencies = [
 dev = ["pytest>=8.0"]
 
 [project.urls]
-Homepage = "https://github.com/satvik/mcp-rc-audit"
-Issues = "https://github.com/satvik/mcp-rc-audit/issues"
+Homepage = "https://github.com/0xkaushal/mcp-rc-audit"
+Issues = "https://github.com/0xkaushal/mcp-rc-audit/issues"
 
 [project.scripts]
 mcp-rc-audit = "mcp_rc_audit.cli:main"

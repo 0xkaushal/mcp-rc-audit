@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-REPO="https://github.com/YOUR_USERNAME/mcp-rc-audit.git"
+REPO="https://github.com/0xkaushal/mcp-rc-audit.git"
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'

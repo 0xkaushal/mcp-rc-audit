@@ -30,11 +30,7 @@ this handoff:
   PY001, which needs multi-line context).
 - `mcp_rc_audit/probe/conformance.py` — 3 live HTTP checks using
   `httpx`: `no_session_required`, `meta_protocol_version`,
-  `missing_session_header`. **These have not been run against a real
-  MCP server yet** — only unit-testable locally, so treat them as
-  logically-sound-but-unverified until tested against a live endpoint
-  (Satvik has a production MCP server, `mcp-dev-compass`, on ECS
-  Fargate with Azure AD OAuth — that's the natural first real target).
+  `missing_session_header`.
 - `mcp_rc_audit/report.py` — rich-based terminal output + JSON export.
 - `mcp_rc_audit/cli.py` — click-based CLI, `--fail-on` flag for CI use.
 - `examples/vulnerable_server.py` — deliberately broken FastMCP server,
