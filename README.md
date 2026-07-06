@@ -30,9 +30,29 @@ This tool has two parts:
    MCP server (no session header, `_meta`-carried protocol version) and
    reports whether the server actually degrades gracefully.
 
-## Install
+## Quick Install
 
 ```bash
+curl -LsSf https://raw.githubusercontent.com/0xkaushal/mcp-rc-audit/main/install.sh | sh
+```
+
+This auto-detects `uv`, `pipx`, or `pip` and installs from GitHub.
+
+### Alternative install methods
+
+```bash
+# Using uv
+uv tool install git+https://github.com/0xkaushal/mcp-rc-audit.git
+
+# Using pipx
+pipx install git+https://github.com/0xkaushal/mcp-rc-audit.git
+
+# Using pip
+pip install git+https://github.com/0xkaushal/mcp-rc-audit.git
+
+# For development
+git clone https://github.com/0xkaushal/mcp-rc-audit.git
+cd mcp-rc-audit
 pip install -e ".[dev]"
 ```
 
@@ -52,7 +72,7 @@ mcp-rc-audit scan ./my-mcp-server --json report.json --fail-on warn
 
 ```yaml
 # .github/workflows/mcp-rc-audit.yml
-- run: pip install mcp-rc-audit
+- run: pip install git+https://github.com/0xkaushal/mcp-rc-audit.git
 - run: mcp-rc-audit scan . --fail-on blocker
 ```
 
@@ -69,6 +89,8 @@ This sends three checks against the live endpoint:
 | `no_session_required` | Calls `tools/list` with no prior `initialize` and no session header — the exact shape an RC-compliant client will use. |
 | `meta_protocol_version` | Sends protocol version inside `_meta` instead of relying on a remembered handshake. |
 | `missing_session_header` | Confirms the server doesn't hard-fail when `Mcp-Session-Id` is absent or empty. |
+
+> **Note:** The probe works against servers running on **Streamable HTTP** transport. Servers using stdio transport (launched via `"command"` in Claude Desktop config) can only be checked with `scan`.
 
 ## Try it on the bundled example
 
@@ -112,12 +134,13 @@ pattern is a ~10-line PR.
 
 ## Roadmap ideas
 
-- TS/JS AST-based scanning (currently regex) to cut false positives.
+- AST-based scanning (currently regex) to cut false positives.
 - `--fix` mode for the purely mechanical patterns (e.g. rewriting
   `sessionIdGenerator: () => randomUUID()` to `undefined`).
 - A GitHub Action wrapper for one-line CI adoption.
 - Expand the probe to detect sticky-session assumptions by hitting the
   same URL from multiple concurrent connections and diffing behavior.
+- `--exclude` flag to skip directories like `examples/` or `tests/`.
 
 ## License
 
