@@ -75,26 +75,21 @@ differentiates this from a generic linter.
 
 ## Known gaps / good next tasks, roughly in priority order
 
-1. **Verify the probe against a real server.** This is the highest-value
-   next step — the static scanner has been tested, the probe hasn't.
-   If Satvik gives you access to a test MCP server URL (local or
-   staging, NOT production without asking first), run `mcp-rc-audit
-   probe <url>` and fix whatever breaks.
-2. **TS/JS scanning is regex-only** — real false-positive risk (e.g.
+1. **TS/JS scanning is regex-only** — real false-positive risk (e.g.
    TS001's regex won't catch `randomUUID` imported under an alias, or
    multi-line arrow functions). An AST-based pass using `ts-morph` or
    similar would be a meaningfully better v2, but don't do this rewrite
    without discussing scope first — it's a bigger dependency footprint
    (Node.js as a runtime dependency for a Python CLI) and needs a
    design decision.
-3. **`--fix` mode** for purely mechanical patterns (TS001 in particular
+2. **`--fix` mode** for purely mechanical patterns (TS001 in particular
    — rewriting `sessionIdGenerator: () => randomUUID()` to `undefined`
    is close to a pure codemod). PY001 and ANY001 are NOT good `--fix`
    candidates — they need human judgment about where state should live.
-4. **GitHub Action wrapper** — thin wrapper around `mcp-rc-audit scan .
+3. **GitHub Action wrapper** — thin wrapper around `mcp-rc-audit scan .
    --fail-on blocker --json report.json`, upload report.json as an
    artifact, maybe a PR comment summarizing findings.
-5. **Sticky-session detection in the probe** — hit the same URL from
+4. **Sticky-session detection in the probe** — hit the same URL from
    multiple concurrent connections and diff behavior, to catch cases
    where a server *looks* stateless in a single-request test but
    actually depends on connection affinity under load.
@@ -119,6 +114,6 @@ differentiates this from a generic linter.
 pip install -e ".[dev]"
 pytest tests/ -v
 mcp-rc-audit scan examples/ --fail-on never
-mcp-rc-audit probe <url>          # needs a real running MCP server
+mcp-rc-audit probe <url>
 mcp-rc-audit scan . --json report.json --fail-on warn
 ```
