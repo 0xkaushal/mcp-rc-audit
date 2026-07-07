@@ -263,7 +263,9 @@ class TestRenderProbeResultsSummary:
     def _capture(self, results: list[ProbeResult]) -> str:
         """Run render_probe_results and return everything printed to the console."""
         from io import StringIO
+
         from rich.console import Console
+
         import mcp_rc_audit.report as report_module
 
         buf = StringIO()
