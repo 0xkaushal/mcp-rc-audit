@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   test:
@@ -45,3 +47,78 @@ jobs:
 
       - name: Lint
         run: ruff check .
+
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [test, lint]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-14
+            artifact_name: mcp-rc-audit-macos-arm64
+          - os: macos-13
+            artifact_name: mcp-rc-audit-macos-x64
+          - os: ubuntu-latest
+            artifact_name: mcp-rc-audit-linux
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e .
+          pip install pyinstaller
+
+      - name: Build binary
+        run: |
+          pyinstaller mcp-rc-audit.spec
+          mv dist/mcp-rc-audit dist/${{ matrix.artifact_name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: dist/${{ matrix.artifact_name }}
+
+  publish-release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: binaries
+          merge-multiple: true
+
+      - name: Make binaries executable
+        run: chmod +x binaries/*
+
+      - name: Delete existing 'latest' release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete latest --yes --cleanup-tag || true
+
+      - name: Create 'latest' release with binaries
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create latest \
+            binaries/mcp-rc-audit-macos-arm64 \
+            binaries/mcp-rc-audit-macos-x64 \
+            binaries/mcp-rc-audit-linux \
+            --title "Latest Build" \
+            --notes "Automated build from \`main\` branch ($(date -u +%Y-%m-%d %H:%M UTC)). Download the binary for your platform and run directly — no Python needed." \
+            --prerelease
