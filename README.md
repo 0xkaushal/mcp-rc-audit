@@ -52,11 +52,7 @@ curl -LsSf https://github.com/0xkaushal/mcp-rc-audit/releases/latest/download/mc
 chmod +x mcp-rc-audit
 ./mcp-rc-audit scan ./my-server/
 
-# macOS (Intel)
-curl -LsSf https://github.com/0xkaushal/mcp-rc-audit/releases/latest/download/mcp-rc-audit-macos-x64 -o mcp-rc-audit
-chmod +x mcp-rc-audit
-
-# Linux
+# Linux (x86_64)
 curl -LsSf https://github.com/0xkaushal/mcp-rc-audit/releases/latest/download/mcp-rc-audit-linux -o mcp-rc-audit
 chmod +x mcp-rc-audit
 ```

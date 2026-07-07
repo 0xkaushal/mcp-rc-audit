@@ -57,8 +57,6 @@ jobs:
         include:
           - os: macos-14
             artifact_name: mcp-rc-audit-macos-arm64
-          - os: macos-13
-            artifact_name: mcp-rc-audit-macos-x64
           - os: ubuntu-latest
             artifact_name: mcp-rc-audit-linux
 
@@ -117,7 +115,6 @@ jobs:
         run: |
           gh release create latest \
             binaries/mcp-rc-audit-macos-arm64 \
-            binaries/mcp-rc-audit-macos-x64 \
             binaries/mcp-rc-audit-linux \
             --title "Latest Build" \
             --notes "Automated build from \`main\` branch ($(date -u +%Y-%m-%d %H:%M UTC)). Download the binary for your platform and run directly — no Python needed." \
