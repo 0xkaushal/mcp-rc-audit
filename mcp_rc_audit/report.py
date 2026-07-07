@@ -70,11 +70,24 @@ def render_probe_results(results: list[ProbeResult], url: str) -> None:
     console.print(table)
 
     failed = [r for r in results if r.outcome == ProbeOutcome.FAIL]
+    unknown = [r for r in results if r.outcome == ProbeOutcome.UNKNOWN]
+
     if failed:
         console.print(
             f"\n[bold red]{len(failed)} check(s) failed.[/bold red] "
             "This server will likely break for RC-compliant clients "
             "before the July 28, 2026 deadline unless addressed."
+        )
+    elif unknown and not any(r.outcome == ProbeOutcome.PASS for r in results):
+        console.print(
+            f"\n[bold yellow]{len(unknown)} check(s) could not complete[/bold yellow] "
+            "(network error or non-MCP endpoint). Confirm the URL is a running "
+            "MCP server and try again."
+        )
+    elif unknown:
+        console.print(
+            f"\n[bold green]All reachable checks passed.[/bold green] "
+            f"[yellow]{len(unknown)} check(s) could not complete[/yellow] due to network errors."
         )
     else:
         console.print("\n[bold green]All checks passed.[/bold green]")

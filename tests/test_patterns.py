@@ -1,7 +1,9 @@
-"""Tests for the scanner pattern engine."""
+"""Tests for the scanner pattern engine and report rendering."""
 
 from pathlib import Path
 
+from mcp_rc_audit.probe import ProbeOutcome, ProbeResult
+from mcp_rc_audit.report import render_probe_results
 from mcp_rc_audit.scanner import scan_path
 
 # ---------- Existing baseline tests ----------
@@ -241,3 +243,75 @@ class TestScannerEdgeCases:
         ids = {f.pattern.id for f in findings}
         assert "PY001" in ids
         assert "ANY001" in ids
+
+
+# ---------- Report rendering: probe summary line ----------
+
+
+def _make_result(outcome: ProbeOutcome) -> ProbeResult:
+    return ProbeResult(
+        check_id="test_check",
+        name="test check",
+        outcome=outcome,
+        detail="detail",
+    )
+
+
+class TestRenderProbeResultsSummary:
+    """Verify the summary line printed after the probe table."""
+
+    def _capture(self, results: list[ProbeResult]) -> str:
+        """Run render_probe_results and return everything printed to the console."""
+        from io import StringIO
+        from rich.console import Console
+        import mcp_rc_audit.report as report_module
+
+        buf = StringIO()
+        original = report_module.console
+        report_module.console = Console(file=buf, highlight=False)
+        try:
+            render_probe_results(results, "http://fake")
+        finally:
+            report_module.console = original
+        return buf.getvalue()
+
+    def test_all_pass_prints_all_checks_passed(self):
+        out = self._capture([_make_result(ProbeOutcome.PASS)] * 3)
+        assert "All checks passed" in out
+        assert "could not complete" not in out
+        assert "failed" not in out
+
+    def test_any_fail_prints_failed_count(self):
+        results = [
+            _make_result(ProbeOutcome.PASS),
+            _make_result(ProbeOutcome.FAIL),
+            _make_result(ProbeOutcome.FAIL),
+        ]
+        out = self._capture(results)
+        assert "2 check(s) failed" in out
+        assert "All checks passed" not in out
+
+    def test_all_unknown_does_not_print_all_checks_passed(self):
+        """Regression: all-UNKNOWN results must NOT produce 'All checks passed'."""
+        out = self._capture([_make_result(ProbeOutcome.UNKNOWN)] * 3)
+        assert "All checks passed" not in out
+        assert "could not complete" in out
+
+    def test_mixed_pass_and_unknown_prints_partial_success(self):
+        results = [
+            _make_result(ProbeOutcome.PASS),
+            _make_result(ProbeOutcome.UNKNOWN),
+        ]
+        out = self._capture(results)
+        assert "All reachable checks passed" in out
+        assert "could not complete" in out
+        assert "All checks passed" not in out  # must not use the unqualified wording
+
+    def test_fail_takes_priority_over_unknown(self):
+        results = [
+            _make_result(ProbeOutcome.FAIL),
+            _make_result(ProbeOutcome.UNKNOWN),
+        ]
+        out = self._capture(results)
+        assert "failed" in out
+        assert "All checks passed" not in out
