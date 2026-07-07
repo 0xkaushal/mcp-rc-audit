@@ -95,6 +95,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Get version from pyproject.toml
+        id: version
+        run: |
+          VERSION=$(grep '^version' pyproject.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -104,18 +111,30 @@ jobs:
       - name: Make binaries executable
         run: chmod +x binaries/*
 
-      - name: Delete existing 'latest' release
+      - name: Delete existing release for this version (if any)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release delete latest --yes --cleanup-tag || true
+        run: gh release delete ${{ steps.version.outputs.tag }} --yes --cleanup-tag || true
 
-      - name: Create 'latest' release with binaries
+      - name: Create release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create latest \
+          gh release create ${{ steps.version.outputs.tag }} \
             binaries/mcp-rc-audit-macos-arm64 \
             binaries/mcp-rc-audit-linux \
-            --title "Latest Build" \
-            --notes "Automated build from \`main\` branch ($(date -u +%Y-%m-%d %H:%M UTC)). Download the binary for your platform and run directly — no Python needed." \
-            --prerelease
+            --title "mcp-rc-audit ${{ steps.version.outputs.tag }}" \
+            --notes "## Install
+
+          Download the binary for your platform and run directly — no Python needed.
+
+          | Platform | Binary |
+          |----------|--------|
+          | macOS (Apple Silicon) | \`mcp-rc-audit-macos-arm64\` |
+          | Linux (x86_64) | \`mcp-rc-audit-linux\` |
+
+          Or install via pip: \`pip install mcp-rc-audit\`
+
+          ---
+          Built from \`main\` at $(date -u +%Y-%m-%d\ %H:%M\ UTC)." \
+            --latest

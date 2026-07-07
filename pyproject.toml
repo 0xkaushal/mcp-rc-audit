@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-rc-audit"
-version = "0.1.0"
+version = "0.1.1"
 description = "Static scanner + live conformance probe for the MCP 2026-07-28 stateless migration"
 readme = "README.md"
 requires-python = ">=3.9"
