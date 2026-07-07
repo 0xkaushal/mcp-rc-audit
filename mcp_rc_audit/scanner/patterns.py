@@ -19,9 +19,9 @@ Severity guide:
   INFO     - not broken, but worth a conscious decision before July 28
 """
 
+import re
 from dataclasses import dataclass
 from enum import Enum
-import re
 
 
 class Severity(str, Enum):

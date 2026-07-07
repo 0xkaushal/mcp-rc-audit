@@ -6,8 +6,8 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 
+from .probe import ProbeOutcome, ProbeResult
 from .scanner import Finding, Severity
-from .probe import ProbeResult, ProbeOutcome
 
 console = Console()
 

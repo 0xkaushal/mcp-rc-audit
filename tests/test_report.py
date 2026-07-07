@@ -3,10 +3,10 @@
 import json
 from pathlib import Path
 
-from mcp_rc_audit.report import render_scan_findings, render_probe_results, write_json_report
-from mcp_rc_audit.scanner import Finding, Severity
-from mcp_rc_audit.scanner.patterns import PATTERNS, Pattern
-from mcp_rc_audit.probe import ProbeResult, ProbeOutcome
+from mcp_rc_audit.probe import ProbeOutcome, ProbeResult
+from mcp_rc_audit.report import render_probe_results, render_scan_findings, write_json_report
+from mcp_rc_audit.scanner import Finding
+from mcp_rc_audit.scanner.patterns import PATTERNS
 
 
 def _make_finding(pattern_id: str = "ANY001", file_name: str = "test.py", line_no: int = 1):

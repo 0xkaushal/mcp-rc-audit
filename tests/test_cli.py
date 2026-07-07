@@ -6,7 +6,6 @@ from click.testing import CliRunner
 
 from mcp_rc_audit.cli import main
 
-
 runner = CliRunner()
 
 
@@ -17,8 +16,7 @@ class TestScanCommand:
         """No findings + default --fail-on blocker => exit 0."""
         clean = tmp_path / "clean.py"
         clean.write_text(
-            "from fastmcp import FastMCP\n"
-            "mcp = FastMCP('clean', stateless_http=True)\n"
+            "from fastmcp import FastMCP\nmcp = FastMCP('clean', stateless_http=True)\n"
         )
         result = runner.invoke(main, ["scan", str(tmp_path)])
         assert result.exit_code == 0
@@ -38,18 +36,13 @@ class TestScanCommand:
 
     def test_fail_on_warn_exits_nonzero_for_warn(self, tmp_path: Path):
         """--fail-on warn => exit 1 if a WARN-or-higher finding exists."""
-        (tmp_path / "server.py").write_text(
-            "from fastmcp import FastMCP\n"
-            "mcp = FastMCP('srv')\n"
-        )
+        (tmp_path / "server.py").write_text("from fastmcp import FastMCP\nmcp = FastMCP('srv')\n")
         result = runner.invoke(main, ["scan", str(tmp_path), "--fail-on", "warn"])
         assert result.exit_code == 1
 
     def test_fail_on_warn_exits_zero_for_info_only(self, tmp_path: Path):
         """--fail-on warn => exit 0 if only INFO findings."""
-        (tmp_path / "sample.py").write_text(
-            "result = await client.createMessage(params)\n"
-        )
+        (tmp_path / "sample.py").write_text("result = await client.createMessage(params)\n")
         result = runner.invoke(main, ["scan", str(tmp_path), "--fail-on", "warn"])
         assert result.exit_code == 0
 
@@ -63,6 +56,7 @@ class TestScanCommand:
         assert result.exit_code == 0
         assert json_out.exists()
         import json
+
         data = json.loads(json_out.read_text())
         assert isinstance(data, list)
         assert len(data) > 0

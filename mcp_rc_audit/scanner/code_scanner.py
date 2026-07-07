@@ -5,15 +5,23 @@ a flat list of Finding objects that report.py turns into human output.
 
 from __future__ import annotations
 
+import fnmatch
 from dataclasses import dataclass
 from pathlib import Path
-import fnmatch
 
 from .patterns import PATTERNS, Pattern, Severity
 
 DEFAULT_IGNORE_DIRS = {
-    ".git", "node_modules", "__pycache__", ".venv", "venv",
-    "dist", "build", ".mypy_cache", ".pytest_cache", "site-packages",
+    ".git",
+    "node_modules",
+    "__pycache__",
+    ".venv",
+    "venv",
+    "dist",
+    "build",
+    ".mypy_cache",
+    ".pytest_cache",
+    "site-packages",
 }
 
 

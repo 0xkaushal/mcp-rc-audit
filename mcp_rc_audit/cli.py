@@ -5,9 +5,9 @@ from pathlib import Path
 
 import click
 
-from .scanner import scan_path, Severity
 from .probe import run_probe
-from .report import render_scan_findings, render_probe_results, write_json_report
+from .report import render_probe_results, render_scan_findings, write_json_report
+from .scanner import Severity, scan_path
 
 
 @click.group()
@@ -28,8 +28,13 @@ def main():
     help="Exit non-zero if a finding at or above this severity is found. "
     "Use 'never' for report-only mode (e.g. first run on a large repo).",
 )
-@click.option("--json", "json_out", type=click.Path(path_type=Path), default=None,
-              help="Also write findings to a JSON file.")
+@click.option(
+    "--json",
+    "json_out",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Also write findings to a JSON file.",
+)
 def scan(path: Path, fail_on: str, json_out: Path | None):
     """Scan a codebase for MCP RC-migration risk patterns."""
     findings = scan_path(path)
@@ -55,6 +60,7 @@ def probe(url: str):
     render_probe_results(results, url)
 
     from .probe import ProbeOutcome
+
     if any(r.outcome == ProbeOutcome.FAIL for r in results):
         sys.exit(1)
 

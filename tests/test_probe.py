@@ -1,15 +1,15 @@
 """Tests for the live probe module (mocked HTTP, no real server needed)."""
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import httpx
 
 from mcp_rc_audit.probe.conformance import (
-    check_no_session_required,
+    ProbeOutcome,
     check_meta_protocol_version,
+    check_no_session_required,
     check_survives_missing_session_header,
     run_probe,
-    ProbeOutcome,
 )
 
 
@@ -32,9 +32,7 @@ class TestCheckNoSessionRequired:
 
     def test_fail_on_400_with_session_mention(self):
         client = MagicMock()
-        client.post.return_value = _mock_response(
-            400, '{"error": "Missing session ID"}'
-        )
+        client.post.return_value = _mock_response(400, '{"error": "Missing session ID"}')
         result = check_no_session_required(client, "http://localhost:8000/mcp")
         assert result.outcome == ProbeOutcome.FAIL
 
@@ -47,9 +45,7 @@ class TestCheckNoSessionRequired:
     def test_pass_on_400_without_session_mention(self):
         """400 that doesn't mention 'session' isn't necessarily a session problem."""
         client = MagicMock()
-        client.post.return_value = _mock_response(
-            400, '{"error": "Invalid JSON-RPC request"}'
-        )
+        client.post.return_value = _mock_response(400, '{"error": "Invalid JSON-RPC request"}')
         result = check_no_session_required(client, "http://localhost:8000/mcp")
         assert result.outcome == ProbeOutcome.PASS
 
@@ -100,17 +96,13 @@ class TestCheckSurvivesMissingSessionHeader:
 
     def test_fail_on_400_session_mention(self):
         client = MagicMock()
-        client.post.return_value = _mock_response(
-            400, "Invalid session: no active session found"
-        )
+        client.post.return_value = _mock_response(400, "Invalid session: no active session found")
         result = check_survives_missing_session_header(client, "http://localhost:8000/mcp")
         assert result.outcome == ProbeOutcome.FAIL
 
     def test_fail_on_404_session_mention(self):
         client = MagicMock()
-        client.post.return_value = _mock_response(
-            404, "Session not found"
-        )
+        client.post.return_value = _mock_response(404, "Session not found")
         result = check_survives_missing_session_header(client, "http://localhost:8000/mcp")
         assert result.outcome == ProbeOutcome.FAIL
 

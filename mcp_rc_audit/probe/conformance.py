@@ -13,10 +13,9 @@ of whether the server itself has been updated yet.
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass
 from enum import Enum
-import json
-import uuid
 
 import httpx
 
@@ -68,13 +67,16 @@ def check_no_session_required(client: httpx.Client, url: str) -> ProbeResult:
         resp = _post(client, url, _jsonrpc("tools/list"))
     except httpx.HTTPError as exc:
         return ProbeResult(
-            "no_session_required", "tools/list without prior session",
-            ProbeOutcome.UNKNOWN, f"Request failed: {exc}",
+            "no_session_required",
+            "tools/list without prior session",
+            ProbeOutcome.UNKNOWN,
+            f"Request failed: {exc}",
         )
 
     if resp.status_code == 400 and "session" in resp.text.lower():
         return ProbeResult(
-            "no_session_required", "tools/list without prior session",
+            "no_session_required",
+            "tools/list without prior session",
             ProbeOutcome.FAIL,
             f"Server returned 400 referencing session state: {resp.text[:200]!r}. "
             "This will break for RC-compliant clients that never send a "
@@ -82,13 +84,14 @@ def check_no_session_required(client: httpx.Client, url: str) -> ProbeResult:
         )
     if resp.status_code >= 500:
         return ProbeResult(
-            "no_session_required", "tools/list without prior session",
+            "no_session_required",
+            "tools/list without prior session",
             ProbeOutcome.FAIL,
-            f"Server returned {resp.status_code} instead of a JSON-RPC "
-            "error or valid response.",
+            f"Server returned {resp.status_code} instead of a JSON-RPC error or valid response.",
         )
     return ProbeResult(
-        "no_session_required", "tools/list without prior session",
+        "no_session_required",
+        "tools/list without prior session",
         ProbeOutcome.PASS,
         f"Server responded with {resp.status_code} without demanding a session.",
     )
@@ -103,24 +106,29 @@ def check_meta_protocol_version(client: httpx.Client, url: str) -> ProbeResult:
     """
     try:
         resp = _post(
-            client, url,
+            client,
+            url,
             _jsonrpc("tools/list", meta={"protocolVersion": "2026-07-28"}),
         )
     except httpx.HTTPError as exc:
         return ProbeResult(
-            "meta_protocol_version", "_meta.protocolVersion on a bare request",
-            ProbeOutcome.UNKNOWN, f"Request failed: {exc}",
+            "meta_protocol_version",
+            "_meta.protocolVersion on a bare request",
+            ProbeOutcome.UNKNOWN,
+            f"Request failed: {exc}",
         )
 
     if resp.status_code >= 500:
         return ProbeResult(
-            "meta_protocol_version", "_meta.protocolVersion on a bare request",
+            "meta_protocol_version",
+            "_meta.protocolVersion on a bare request",
             ProbeOutcome.FAIL,
             f"Server errored ({resp.status_code}) on a _meta-bearing request "
             "instead of handling or ignoring the unfamiliar field.",
         )
     return ProbeResult(
-        "meta_protocol_version", "_meta.protocolVersion on a bare request",
+        "meta_protocol_version",
+        "_meta.protocolVersion on a bare request",
         ProbeOutcome.PASS,
         f"Server responded with {resp.status_code}; did not crash on _meta.",
     )
@@ -133,24 +141,30 @@ def check_survives_missing_session_header(client: httpx.Client, url: str) -> Pro
     """
     try:
         resp = _post(
-            client, url, _jsonrpc("ping"),
+            client,
+            url,
+            _jsonrpc("ping"),
             headers={"Mcp-Session-Id": ""},
         )
     except httpx.HTTPError as exc:
         return ProbeResult(
-            "missing_session_header", "empty Mcp-Session-Id header",
-            ProbeOutcome.UNKNOWN, f"Request failed: {exc}",
+            "missing_session_header",
+            "empty Mcp-Session-Id header",
+            ProbeOutcome.UNKNOWN,
+            f"Request failed: {exc}",
         )
 
     if resp.status_code in (400, 404) and "session" in resp.text.lower():
         return ProbeResult(
-            "missing_session_header", "empty Mcp-Session-Id header",
+            "missing_session_header",
+            "empty Mcp-Session-Id header",
             ProbeOutcome.FAIL,
             f"Server treats an absent/empty session header as fatal "
             f"({resp.status_code}): {resp.text[:200]!r}",
         )
     return ProbeResult(
-        "missing_session_header", "empty Mcp-Session-Id header",
+        "missing_session_header",
+        "empty Mcp-Session-Id header",
         ProbeOutcome.PASS,
         f"Server responded with {resp.status_code}.",
     )

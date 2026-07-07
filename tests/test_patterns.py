@@ -4,7 +4,6 @@ from pathlib import Path
 
 from mcp_rc_audit.scanner import scan_path
 
-
 # ---------- Existing baseline tests ----------
 
 
@@ -55,25 +54,19 @@ class TestTS001:
     """TS001: explicit-session-id-generator."""
 
     def test_arrow_function_form(self, tmp_path: Path):
-        (tmp_path / "index.ts").write_text(
-            "sessionIdGenerator: () => randomUUID()\n"
-        )
+        (tmp_path / "index.ts").write_text("sessionIdGenerator: () => randomUUID()\n")
         ids = {f.pattern.id for f in scan_path(tmp_path)}
         assert "TS001" in ids
 
     def test_undefined_value_no_match(self, tmp_path: Path):
         """Setting sessionIdGenerator: undefined is the correct fix -- no finding."""
-        (tmp_path / "index.ts").write_text(
-            "sessionIdGenerator: undefined\n"
-        )
+        (tmp_path / "index.ts").write_text("sessionIdGenerator: undefined\n")
         ids = {f.pattern.id for f in scan_path(tmp_path)}
         assert "TS001" not in ids
 
     def test_comment_line_still_matches(self, tmp_path: Path):
         """Regex doesn't exclude comments -- acceptable for a warning tool."""
-        (tmp_path / "app.js").write_text(
-            "// old: sessionIdGenerator: () => randomUUID()\n"
-        )
+        (tmp_path / "app.js").write_text("// old: sessionIdGenerator: () => randomUUID()\n")
         ids = {f.pattern.id for f in scan_path(tmp_path)}
         assert "TS001" in ids
 
@@ -82,23 +75,17 @@ class TestTS002:
     """TS002: manual Mcp-Session-Id header handling."""
 
     def test_double_quotes(self, tmp_path: Path):
-        (tmp_path / "handler.ts").write_text(
-            'const sid = req.headers["Mcp-Session-Id"];\n'
-        )
+        (tmp_path / "handler.ts").write_text('const sid = req.headers["Mcp-Session-Id"];\n')
         ids = {f.pattern.id for f in scan_path(tmp_path)}
         assert "TS002" in ids
 
     def test_single_quotes(self, tmp_path: Path):
-        (tmp_path / "handler.js").write_text(
-            "const sid = req.headers['Mcp-Session-Id'];\n"
-        )
+        (tmp_path / "handler.js").write_text("const sid = req.headers['Mcp-Session-Id'];\n")
         ids = {f.pattern.id for f in scan_path(tmp_path)}
         assert "TS002" in ids
 
     def test_unrelated_header_no_match(self, tmp_path: Path):
-        (tmp_path / "handler.ts").write_text(
-            'const ct = req.headers["Content-Type"];\n'
-        )
+        (tmp_path / "handler.ts").write_text('const ct = req.headers["Content-Type"];\n')
         ids = {f.pattern.id for f in scan_path(tmp_path)}
         assert "TS002" not in ids
 
@@ -108,16 +95,14 @@ class TestPY001:
 
     def test_no_stateless_kwarg(self, tmp_path: Path):
         (tmp_path / "server.py").write_text(
-            "from fastmcp import FastMCP\n"
-            "mcp = FastMCP('my-server')\n"
+            "from fastmcp import FastMCP\nmcp = FastMCP('my-server')\n"
         )
         ids = {f.pattern.id for f in scan_path(tmp_path)}
         assert "PY001" in ids
 
     def test_stateless_true_no_match(self, tmp_path: Path):
         (tmp_path / "server.py").write_text(
-            "from fastmcp import FastMCP\n"
-            "mcp = FastMCP('my-server', stateless_http=True)\n"
+            "from fastmcp import FastMCP\nmcp = FastMCP('my-server', stateless_http=True)\n"
         )
         ids = {f.pattern.id for f in scan_path(tmp_path)}
         assert "PY001" not in ids
@@ -163,9 +148,7 @@ class TestANY003:
     """ANY003: deprecated tasks/list usage."""
 
     def test_tasks_list_string(self, tmp_path: Path):
-        (tmp_path / "client.py").write_text(
-            'response = await client.call("tasks/list")\n'
-        )
+        (tmp_path / "client.py").write_text('response = await client.call("tasks/list")\n')
         ids = {f.pattern.id for f in scan_path(tmp_path)}
         assert "ANY003" in ids
 
@@ -182,16 +165,12 @@ class TestANY005:
     """ANY005: deprecated sampling/roots."""
 
     def test_create_message(self, tmp_path: Path):
-        (tmp_path / "sampler.ts").write_text(
-            "const result = await client.createMessage(params);\n"
-        )
+        (tmp_path / "sampler.ts").write_text("const result = await client.createMessage(params);\n")
         ids = {f.pattern.id for f in scan_path(tmp_path)}
         assert "ANY005" in ids
 
     def test_list_roots(self, tmp_path: Path):
-        (tmp_path / "roots.js").write_text(
-            "const roots = await client.listRoots();\n"
-        )
+        (tmp_path / "roots.js").write_text("const roots = await client.listRoots();\n")
         ids = {f.pattern.id for f in scan_path(tmp_path)}
         assert "ANY005" in ids
 
@@ -227,9 +206,7 @@ class TestScannerEdgeCases:
         """node_modules should be skipped entirely."""
         nm = tmp_path / "node_modules" / "some-pkg"
         nm.mkdir(parents=True)
-        (nm / "index.js").write_text(
-            "sessionIdGenerator: () => randomUUID()\n"
-        )
+        (nm / "index.js").write_text("sessionIdGenerator: () => randomUUID()\n")
         findings = scan_path(tmp_path)
         assert findings == []
 
@@ -243,9 +220,7 @@ class TestScannerEdgeCases:
 
     def test_file_glob_filtering(self, tmp_path: Path):
         """A .txt file should not trigger TS patterns."""
-        (tmp_path / "notes.txt").write_text(
-            "sessionIdGenerator: () => randomUUID()\n"
-        )
+        (tmp_path / "notes.txt").write_text("sessionIdGenerator: () => randomUUID()\n")
         findings = scan_path(tmp_path)
         assert findings == []
 
@@ -260,9 +235,7 @@ class TestScannerEdgeCases:
     def test_multiple_findings_same_file(self, tmp_path: Path):
         """Multiple patterns can fire in the same file."""
         (tmp_path / "combo.py").write_text(
-            "from fastmcp import FastMCP\n"
-            "mcp = FastMCP('srv')\n"
-            "session_store = {}\n"
+            "from fastmcp import FastMCP\nmcp = FastMCP('srv')\nsession_store = {}\n"
         )
         findings = scan_path(tmp_path)
         ids = {f.pattern.id for f in findings}
